@@ -25,7 +25,6 @@ async function buildRuntime() {
     bundle: true,
     minify: true,
     format: 'iife',
-    globalName: 'FormRuntime',
     outfile: join(runtimeDir, 'form-runtime.js'),
     target: ['es2020'],
     legalComments: 'none',
