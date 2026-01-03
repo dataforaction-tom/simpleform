@@ -1368,7 +1368,14 @@ class FormBuilder {
     previewContainer.innerHTML = '';
 
     try {
-      if (typeof FormRuntime !== 'undefined') {
+      // Check for FormRuntime in multiple ways
+      const FormRuntimeClass = typeof FormRuntime !== 'undefined' 
+        ? FormRuntime 
+        : (typeof window !== 'undefined' && window.FormRuntime)
+        ? window.FormRuntime
+        : null;
+
+      if (FormRuntimeClass) {
         // Create a wrapper div to hold title/description and form
         const wrapper = document.createElement('div');
         wrapper.className = 'form-preview-wrapper';
@@ -1399,7 +1406,7 @@ class FormBuilder {
         wrapper.appendChild(formContainer);
         previewContainer.appendChild(wrapper);
 
-        const form = new FormRuntime({
+        const form = new FormRuntimeClass({
           schema: this.currentSchema,
           container: formContainer,
           theme: this.currentSchema.settings?.theme || 'default',
@@ -1415,7 +1422,16 @@ class FormBuilder {
           this.applyCustomStylesToPreview();
         }, 200);
       } else {
-        previewContainer.innerHTML = '<p>Form Runtime not loaded</p>';
+        previewContainer.innerHTML = `
+          <div style="padding: 2rem; text-align: center; color: #666;">
+            <p style="margin-bottom: 1rem;">Form Runtime not loaded</p>
+            <p style="font-size: 0.875rem;">Please check that /runtime/form-runtime.js is accessible.</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+              typeof FormRuntime: ${typeof FormRuntime}<br>
+              typeof window.FormRuntime: ${typeof window.FormRuntime}
+            </p>
+          </div>
+        `;
       }
     } catch (error) {
       previewContainer.innerHTML = `<p style="color:red;">Error rendering preview: ${error.message}</p>`;
@@ -2065,8 +2081,9 @@ class FormBuilder {
   async downloadStandaloneHTML() {
     try {
       // Read runtime files
-      const runtimeJS = await fetch('../runtime/form-runtime.js').then(r => r.text()).catch(() => '');
-      const runtimeCSS = await fetch('../runtime/form-runtime.css').then(r => r.text()).catch(() => '');
+      const baseUrl = window.location.origin;
+      const runtimeJS = await fetch(`${baseUrl}/runtime/form-runtime.js`).then(r => r.text()).catch(() => '');
+      const runtimeCSS = await fetch(`${baseUrl}/runtime/form-runtime.css`).then(r => r.text()).catch(() => '');
 
       // Get connector code and generate submission handler
       let connectorScript = '';
@@ -2079,7 +2096,7 @@ class FormBuilder {
         if (connectorType === 'csv') {
           // CSV is client-side, embed connector code
           try {
-            const connectorCode = await fetch('../connectors/csv-export.js').then(r => r.text()).catch(() => '');
+            const connectorCode = await fetch(`${baseUrl}/connectors/csv-export.js`).then(r => r.text()).catch(() => '');
             if (connectorCode) {
               connectorScript = `
       <script>
@@ -2105,7 +2122,7 @@ class FormBuilder {
         } else if (connectorType === 'webhook') {
           // Webhook uses existing connector (no API endpoint needed)
           try {
-            const connectorCode = await fetch('../connectors/webhook.js').then(r => r.text()).catch(() => '');
+            const connectorCode = await fetch(`${baseUrl}/connectors/webhook.js`).then(r => r.text()).catch(() => '');
             if (connectorCode) {
               connectorScript = `
       <script>
