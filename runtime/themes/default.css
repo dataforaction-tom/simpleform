@@ -1,0 +1,15 @@
+/**
+ * Default Theme
+ * Extends base styles with default color scheme
+ */
+
+.theme-default {
+  /* Uses CSS variables from form-runtime.css */
+  /* No additional overrides needed - default is already set */
+}
+
+
+
+
+
+

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form</title>
+  <link rel="stylesheet" href="runtime/form-runtime.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .form-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+    .error {
+      text-align: center;
+      padding: 3rem;
+      color: #d32f2f;
+      background: #ffebee;
+      border-radius: 8px;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading form...</p>
+    </div>
+    <div id="error" class="error" style="display: none;">
+      <h2>Form Not Found</h2>
+      <p id="error-message">The form you're looking for doesn't exist or has been removed.</p>
+    </div>
+    <div id="form-wrapper" style="display: none;">
+      <div id="form-container"></div>
+    </div>
+  </div>
+
+  <script src="runtime/form-runtime.js"></script>
+  <script>
+    // Get form ID from URL
+    function getFormId() {
+      // Try path parameter first: /form/abc123
+      const pathMatch = window.location.pathname.match(/\/form\/([^\/]+)/);
+      if (pathMatch) {
+        return pathMatch[1];
+      }
+      // Try query parameter: /form.html?id=abc123
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') || params.get('formId');
+    }
+
+    // Load form schema from API
+    async function loadForm() {
+      const formId = getFormId();
+      
+      if (!formId) {
+        showError('No form ID provided in URL');
+        return;
+      }
+
+      try {
+        // Get base URL
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/forms/${formId}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            showError('Form not found. It may have been deleted or the URL is incorrect.');
+          } else {
+            showError('Failed to load form. Please try again later.');
+          }
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (!data.success || !data.schema) {
+          showError('Invalid form data');
+          return;
+        }
+
+        // Hide loading, show form
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('form-wrapper').style.display = 'block';
+
+        // Initialize form
+        const formSchema = data.schema;
+        
+        // Set page title
+        if (formSchema.title) {
+          document.title = formSchema.title;
+        }
+
+        // Create form runtime
+        const form = new FormRuntime({
+          schema: formSchema,
+          container: '#form-container',
+          theme: formSchema.settings?.theme || 'default',
+          onSubmit: async (formData) => {
+            // Handle form submission based on connector type
+            if (formSchema.connector && formSchema.connector.type) {
+              const connectorType = formSchema.connector.type;
+              const connectorConfig = formSchema.connector.config || {};
+
+              if (connectorType === 'csv') {
+                // CSV export - client-side
+                try {
+                  const csvConnectorCode = await fetch('connectors/csv-export.js').then(r => r.text()).catch(() => '');
+                  if (csvConnectorCode) {
+                    // Create a script element to load the connector
+                    const script = document.createElement('script');
+                    script.textContent = csvConnectorCode;
+                    document.head.appendChild(script);
+                    const connector = new CSVExportConnector(connectorConfig);
+                    return await connector.submit(formData);
+                  }
+                } catch (error) {
+                  return { success: false, message: error.message };
+                }
+              } else if (connectorType === 'webhook') {
+                // Webhook - direct call
+                try {
+                  const webhookCode = await fetch('connectors/webhook.js').then(r => r.text()).catch(() => '');
+                  if (webhookCode) {
+                    const script = document.createElement('script');
+                    script.textContent = webhookCode;
+                    document.head.appendChild(script);
+                    const connector = new WebhookConnector(connectorConfig);
+                    return await connector.submit(formData);
+                  }
+                } catch (error) {
+                  return { success: false, message: error.message };
+                }
+              } else {
+                // API-based connectors
+                const apiEndpoint = connectorConfig.apiEndpoint;
+                if (apiEndpoint) {
+                  try {
+                    let requestBody = { formData: formData };
+
+                    // Add connector-specific config
+                    if (connectorType === 'airtable') {
+                      requestBody.baseId = connectorConfig.baseId;
+                      requestBody.tableName = connectorConfig.tableName;
+                      requestBody.fieldMapping = connectorConfig.fieldMapping;
+                    } else if (connectorType === 'google-sheets') {
+                      requestBody.spreadsheetId = connectorConfig.spreadsheetId;
+                      requestBody.sheetName = connectorConfig.sheetName;
+                      requestBody.fieldMapping = connectorConfig.fieldMapping;
+                      requestBody.createSheet = connectorConfig.createSheet;
+                    } else if (connectorType === 'notion') {
+                      requestBody.databaseId = connectorConfig.databaseId;
+                      requestBody.propertyMapping = connectorConfig.propertyMapping;
+                    } else if (connectorType === 'email') {
+                      requestBody.provider = connectorConfig.provider;
+                      requestBody.to = connectorConfig.to;
+                      requestBody.from = connectorConfig.from;
+                      requestBody.subject = connectorConfig.subject;
+                      requestBody.template = connectorConfig.template;
+                    }
+
+                    const response = await fetch(apiEndpoint, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify(requestBody)
+                    });
+
+                    if (!response.ok) {
+                      const error = await response.json().catch(() => ({ message: 'Request failed' }));
+                      return { success: false, message: error.message || 'Submission failed' };
+                    }
+
+                    const result = await response.json();
+                    return result;
+                  } catch (error) {
+                    return { success: false, message: error.message || 'Network error' };
+                  }
+                } else {
+                  return { success: false, message: 'Connector not properly configured. API endpoint missing.' };
+                }
+              }
+            }
+
+            // Default: just log
+            console.log('Form submitted:', formData);
+            return { success: true, message: 'Thank you for your submission!' };
+          }
+        });
+
+        // Apply custom styles if available
+        if (formSchema.settings?.customStyles) {
+          const styles = formSchema.settings.customStyles;
+          const formElement = document.querySelector('.form-runtime');
+          if (formElement) {
+            if (styles.theme) {
+              formElement.className = `form-runtime theme-${styles.theme}`;
+            }
+            if (styles.primaryColor) {
+              formElement.style.setProperty('--form-primary-color', styles.primaryColor);
+            }
+            if (styles.textColor) {
+              formElement.style.setProperty('--form-text-color', styles.textColor);
+            }
+            if (styles.backgroundColor) {
+              formElement.style.setProperty('--form-background-color', styles.backgroundColor);
+            }
+            if (styles.borderColor) {
+              formElement.style.setProperty('--form-border-color', styles.borderColor);
+            }
+            if (styles.fontFamily) {
+              formElement.style.setProperty('--form-font-family', styles.fontFamily);
+            }
+            if (styles.borderRadius) {
+              formElement.style.setProperty('--form-border-radius', styles.borderRadius);
+            }
+          }
+        }
+
+        // Render form
+        form.render();
+      } catch (error) {
+        console.error('Error loading form:', error);
+        showError('An error occurred while loading the form. Please try again later.');
+      }
+    }
+
+    function showError(message) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('error-message').textContent = message;
+    }
+
+    // Load form when page loads
+    loadForm();
+  </script>
+</body>
+</html>
+

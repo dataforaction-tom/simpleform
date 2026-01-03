@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Builder</title>
+  <link rel="stylesheet" href="builder.css">
+  <link rel="stylesheet" href="../runtime/form-runtime.css">
+</head>
+<body>
+  <div class="builder-container">
+    <header class="builder-header">
+      <h1>Form Builder</h1>
+      <div class="builder-actions">
+        <button id="import-btn" class="btn btn-secondary">Import JSON</button>
+        <button id="export-btn" class="btn btn-primary">Export JSON</button>
+        <button id="share-btn" class="btn btn-primary">Share Form</button>
+        <button id="preview-btn" class="btn btn-secondary">Preview</button>
+      </div>
+    </header>
+
+    <div class="builder-main">
+      <!-- Sidebar: Field Palette -->
+      <aside class="builder-sidebar" id="field-palette">
+        <h2>Fields</h2>
+        <div class="field-palette-list">
+          <div class="field-palette-item" data-type="text" draggable="true">
+            <span class="field-icon">📝</span>
+            <span>Text</span>
+          </div>
+          <div class="field-palette-item" data-type="textarea" draggable="true">
+            <span class="field-icon">📄</span>
+            <span>Textarea</span>
+          </div>
+          <div class="field-palette-item" data-type="email" draggable="true">
+            <span class="field-icon">✉️</span>
+            <span>Email</span>
+          </div>
+          <div class="field-palette-item" data-type="number" draggable="true">
+            <span class="field-icon">🔢</span>
+            <span>Number</span>
+          </div>
+          <div class="field-palette-item" data-type="tel" draggable="true">
+            <span class="field-icon">📞</span>
+            <span>Phone</span>
+          </div>
+          <div class="field-palette-item" data-type="url" draggable="true">
+            <span class="field-icon">🔗</span>
+            <span>URL</span>
+          </div>
+          <div class="field-palette-item" data-type="date" draggable="true">
+            <span class="field-icon">📅</span>
+            <span>Date</span>
+          </div>
+          <div class="field-palette-item" data-type="select" draggable="true">
+            <span class="field-icon">📋</span>
+            <span>Select</span>
+          </div>
+          <div class="field-palette-item" data-type="radio" draggable="true">
+            <span class="field-icon">🔘</span>
+            <span>Radio</span>
+          </div>
+          <div class="field-palette-item" data-type="checkboxes" draggable="true">
+            <span class="field-icon">☑️</span>
+            <span>Checkboxes</span>
+          </div>
+          <div class="field-palette-item" data-type="file" draggable="true">
+            <span class="field-icon">📎</span>
+            <span>File Upload</span>
+          </div>
+          <div class="field-palette-item" data-type="header" draggable="true">
+            <span class="field-icon">📰</span>
+            <span>Header</span>
+          </div>
+          <div class="field-palette-item" data-type="paragraph" draggable="true">
+            <span class="field-icon">📝</span>
+            <span>Paragraph</span>
+          </div>
+        </div>
+
+        <h3>Templates</h3>
+        <div class="template-list">
+          <button class="template-btn" data-template="contact">Contact Form</button>
+          <button class="template-btn" data-template="survey">Survey</button>
+          <button class="template-btn" data-template="registration">Registration</button>
+          <button class="template-btn" data-template="feedback">Feedback</button>
+        </div>
+
+        <h3 style="margin-top: 1.5rem;">Repeatable Sections</h3>
+        <button class="btn btn-secondary" id="add-repeatable-section" style="width: 100%; margin-top: 0.5rem;">+ Add Section</button>
+        <div id="repeatable-sections-list"></div>
+      </aside>
+
+      <!-- Main Content: Tabs -->
+      <main class="builder-content">
+        <div class="builder-tabs">
+          <button class="tab-btn active" data-tab="json">JSON Editor</button>
+          <button class="tab-btn" data-tab="gui">GUI Builder</button>
+          <button class="tab-btn" data-tab="connectors">Connectors</button>
+          <button class="tab-btn" data-tab="preview">Preview</button>
+        </div>
+
+        <!-- JSON Editor Tab -->
+        <div class="tab-content active" id="json-tab">
+          <div class="json-editor-container">
+            <textarea id="json-editor" class="json-editor" spellcheck="false"></textarea>
+            <div id="json-errors" class="json-errors"></div>
+          </div>
+        </div>
+
+        <!-- GUI Builder Tab -->
+        <div class="tab-content" id="gui-tab">
+          <div class="gui-builder-container">
+            <div class="form-config-panel">
+              <h3>Form Settings</h3>
+              <div class="config-group">
+                <label>Form Title</label>
+                <input type="text" id="form-title" placeholder="My Form">
+              </div>
+              <div class="config-group">
+                <label>Form Description</label>
+                <textarea id="form-description" placeholder="Form description"></textarea>
+              </div>
+              <div class="config-group">
+                <label>
+                  <input type="checkbox" id="multi-page">
+                  Multi-page form
+                </label>
+              </div>
+              <div id="multi-page-controls" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                <div class="config-group">
+                  <label><strong>Pages</strong></label>
+                  <div id="pages-list" style="margin: 0.5rem 0;"></div>
+                  <button type="button" class="btn btn-secondary" id="add-page-btn" style="margin-top: 0.5rem;">+ Add Page</button>
+                </div>
+                <div class="config-group" style="margin-top: 1rem;">
+                  <label>Current Page</label>
+                  <select id="current-page-select" style="width: 100%; padding: 0.5rem;">
+                  </select>
+                  <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Select a page to view/edit its fields</p>
+                </div>
+              </div>
+              <div class="config-group">
+                <label>
+                  <input type="checkbox" id="progress-bar">
+                  Show progress bar
+                </label>
+              </div>
+
+              <h3 style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #ddd;">Styling</h3>
+              <div class="config-group">
+                <label>Theme</label>
+                <select id="form-theme">
+                  <option value="default">Default</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+              <div class="config-group">
+                <label>Primary Color</label>
+                <input type="color" id="form-primary-color" value="#0066cc">
+              </div>
+              <div class="config-group">
+                <label>Text Color</label>
+                <input type="color" id="form-text-color" value="#333333">
+              </div>
+              <div class="config-group">
+                <label>Background Color</label>
+                <input type="color" id="form-bg-color" value="#ffffff">
+              </div>
+              <div class="config-group">
+                <label>Border Color</label>
+                <input type="color" id="form-border-color" value="#cccccc">
+              </div>
+              <div class="config-group">
+                <label>Font Family</label>
+                <select id="form-font-family">
+                  <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">System Default</option>
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                  <option value="Georgia, serif">Georgia</option>
+                </select>
+              </div>
+              <div class="config-group">
+                <label>Border Radius (px)</label>
+                <input type="range" id="form-border-radius" min="0" max="20" value="4">
+                <span id="border-radius-value">4px</span>
+              </div>
+            </div>
+
+            <div class="form-canvas" id="form-canvas">
+              <div class="canvas-drop-zone">
+                <p>Drag fields here or click to add</p>
+              </div>
+            </div>
+
+            <div class="field-config-panel" id="field-config" style="display: none;">
+              <h3>Field Configuration</h3>
+              <div id="field-config-content"></div>
+            </div>
+
+            <div class="field-config-panel" id="repeatable-section-config" style="display: none;">
+              <h3>Repeatable Section Configuration</h3>
+              <div id="repeatable-section-config-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connectors Tab -->
+        <div class="tab-content" id="connectors-tab">
+          <div class="connectors-container">
+            <h2>Form Submission Connectors</h2>
+            <p style="color:#666;margin-bottom:1.5rem;">Configure how form submissions are handled</p>
+            
+            <div class="config-group">
+              <label>Select Connector</label>
+              <select id="connector-type" style="width:100%;padding:0.5rem;margin-bottom:1rem;">
+                <option value="">None (Manual handling)</option>
+                <option value="csv">CSV Export</option>
+                <option value="webhook">Webhook</option>
+                <option value="google-sheets">Google Sheets</option>
+                <option value="airtable">Airtable</option>
+                <option value="notion">Notion</option>
+                <option value="email">Email</option>
+              </select>
+            </div>
+
+            <div id="connector-config-panel"></div>
+          </div>
+        </div>
+
+        <!-- Preview Tab -->
+        <div class="tab-content" id="preview-tab">
+          <div class="preview-container">
+            <div id="form-preview"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="import-file" accept=".json" style="display: none;">
+
+  <!-- Share Modal -->
+  <div id="share-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Share Form</h2>
+        <button class="modal-close" id="close-share-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="share-option">
+          <h3>Shareable URL</h3>
+          <p>Save form and get a shareable URL (works on Vercel deployments)</p>
+          <input type="text" id="shareable-url" readonly style="width:100%;padding:0.5rem;margin-bottom:0.5rem;font-family:monospace;font-size:0.875rem;">
+          <button class="btn btn-primary" id="save-and-get-url">Save & Get URL</button>
+          <div id="save-status" style="margin-top:0.5rem;font-size:0.875rem;"></div>
+          <div id="qr-code-container" style="margin-top:1rem;"></div>
+        </div>
+        <div class="share-option">
+          <h3>Standalone HTML</h3>
+          <p>Download a complete HTML file with embedded form and connector</p>
+          <button class="btn btn-secondary" id="download-standalone">Download HTML</button>
+        </div>
+        <div class="share-option">
+          <h3>Iframe Embed Code</h3>
+          <p>Copy this code to embed the form in your website</p>
+          <textarea id="iframe-code" readonly style="width:100%;min-height:80px;padding:0.5rem;font-family:monospace;font-size:0.875rem;"></textarea>
+          <button class="btn btn-secondary" id="copy-iframe">Copy Code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../runtime/form-runtime.js"></script>
+  <script src="builder.js"></script>
+</body>
+</html>
+

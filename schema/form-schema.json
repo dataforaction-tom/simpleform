@@ -1,0 +1,396 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Form Schema",
+  "description": "Schema definition for form builder forms",
+  "type": "object",
+  "required": ["formId", "version", "title"],
+  "properties": {
+    "formId": {
+      "type": "string",
+      "description": "Unique identifier for the form"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "default": "1.0"
+    },
+    "title": {
+      "type": "string",
+      "description": "Form title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Form description"
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "multiPage": {
+          "type": "boolean",
+          "default": false
+        },
+        "progressBar": {
+          "type": "boolean",
+          "default": true
+        },
+        "saveProgress": {
+          "type": "boolean",
+          "default": false
+        },
+        "submitButtonText": {
+          "type": "string",
+          "default": "Submit"
+        },
+        "successMessage": {
+          "type": "string",
+          "default": "Thank you for your submission!"
+        },
+        "theme": {
+          "type": "string",
+          "default": "default",
+          "enum": ["default", "dark"]
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Page"
+      }
+    },
+    "repeatableSections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RepeatableSection"
+      }
+    },
+    "calculatedFields": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/CalculatedField"
+      }
+    },
+    "conditionalLogic": {
+      "$ref": "#/definitions/ConditionalLogic"
+    }
+  },
+  "definitions": {
+    "Page": {
+      "type": "object",
+      "required": ["id", "fields"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Field"
+          }
+        }
+      }
+    },
+    "Field": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "textarea",
+            "email",
+            "number",
+            "tel",
+            "url",
+            "date",
+            "time",
+            "datetime",
+            "select",
+            "radio",
+            "checkboxes",
+            "file",
+            "hidden",
+            "richtext",
+            "header",
+            "paragraph"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "defaultValue": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "array" }
+          ]
+        },
+        "validation": {
+          "$ref": "#/definitions/Validation"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FieldOption"
+          }
+        },
+        "conditionalDisplay": {
+          "$ref": "#/definitions/ConditionalDisplay"
+        },
+        "layout": {
+          "$ref": "#/definitions/Layout"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "description": "For header type: h1-h6 level"
+        }
+      }
+    },
+    "FieldOption": {
+      "type": "object",
+      "required": ["value", "label"],
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "Validation": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern"
+        },
+        "minLength": {
+          "type": "integer"
+        },
+        "maxLength": {
+          "type": "integer"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "minDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "maxDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "fileSizeLimit": {
+          "type": "integer",
+          "description": "Maximum file size in bytes"
+        },
+        "fileTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Allowed file MIME types or extensions"
+        },
+        "message": {
+          "type": "string",
+          "description": "Custom validation error message"
+        },
+        "crossField": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "operator": {
+              "type": "string",
+              "enum": ["equals", "notEquals", "greaterThan", "lessThan", "after", "before"]
+            }
+          }
+        }
+      }
+    },
+    "ConditionalDisplay": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConditionalRule"
+          }
+        },
+        "logic": {
+          "type": "string",
+          "enum": ["AND", "OR"],
+          "default": "AND"
+        }
+      }
+    },
+    "ConditionalRule": {
+      "type": "object",
+      "required": ["field", "operator"],
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "equals",
+            "notEquals",
+            "greaterThan",
+            "lessThan",
+            "contains",
+            "notContains"
+          ]
+        },
+        "value": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" }
+          ]
+        }
+      }
+    },
+    "Layout": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "string",
+          "enum": ["full", "half", "third", "twoThirds"],
+          "default": "full"
+        },
+        "order": {
+          "type": "integer"
+        }
+      }
+    },
+    "RepeatableSection": {
+      "type": "object",
+      "required": ["id", "fields"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "addButtonText": {
+          "type": "string",
+          "default": "Add Another"
+        },
+        "removeButtonText": {
+          "type": "string",
+          "default": "Remove"
+        },
+        "minInstances": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 0
+        },
+        "maxInstances": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Field"
+          }
+        }
+      }
+    },
+    "CalculatedField": {
+      "type": "object",
+      "required": ["id", "expression"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Mathematical expression using field IDs"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["number", "currency", "percentage"],
+          "default": "number"
+        },
+        "decimalPlaces": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2
+        }
+      }
+    },
+    "ConditionalLogic": {
+      "type": "object",
+      "properties": {
+        "skipRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SkipRule"
+          }
+        }
+      }
+    },
+    "SkipRule": {
+      "type": "object",
+      "required": ["condition", "action"],
+      "properties": {
+        "condition": {
+          "$ref": "#/definitions/ConditionalRule"
+        },
+        "action": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["skipToPage", "enableField", "disableField"]
+            },
+            "target": {
+              "type": "string",
+              "description": "Page ID or field ID depending on action type"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+

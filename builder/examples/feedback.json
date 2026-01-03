@@ -1,0 +1,70 @@
+{
+  "formId": "feedback-001",
+  "version": "1.0",
+  "title": "Product Feedback",
+  "description": "Share your thoughts about our product",
+  "settings": {
+    "multiPage": false,
+    "progressBar": false,
+    "submitButtonText": "Submit Feedback",
+    "successMessage": "Thank you for your feedback!",
+    "theme": "default"
+  },
+  "pages": [
+    {
+      "id": "page1",
+      "fields": [
+        {
+          "id": "intro",
+          "type": "paragraph",
+          "label": "We value your opinion! Please take a moment to share your thoughts about our product."
+        },
+        {
+          "id": "rating",
+          "type": "radio",
+          "label": "Overall Rating",
+          "required": true,
+          "options": [
+            { "value": "5", "label": "⭐⭐⭐⭐⭐ Excellent" },
+            { "value": "4", "label": "⭐⭐⭐⭐ Very Good" },
+            { "value": "3", "label": "⭐⭐⭐ Good" },
+            { "value": "2", "label": "⭐⭐ Fair" },
+            { "value": "1", "label": "⭐ Poor" }
+          ]
+        },
+        {
+          "id": "likes",
+          "type": "textarea",
+          "label": "What do you like most?",
+          "placeholder": "Tell us what you love about the product...",
+          "required": false,
+          "validation": {
+            "maxLength": 500
+          }
+        },
+        {
+          "id": "improvements",
+          "type": "textarea",
+          "label": "What could be improved?",
+          "placeholder": "Share your suggestions...",
+          "required": false,
+          "validation": {
+            "maxLength": 500
+          }
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "label": "Email (optional - for follow-up)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+

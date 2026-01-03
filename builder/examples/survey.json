@@ -1,0 +1,102 @@
+{
+  "formId": "survey-001",
+  "version": "1.0",
+  "title": "Customer Satisfaction Survey",
+  "description": "Help us improve by sharing your feedback",
+  "settings": {
+    "multiPage": true,
+    "progressBar": true,
+    "submitButtonText": "Submit Survey",
+    "successMessage": "Thank you for your feedback!",
+    "theme": "default"
+  },
+  "pages": [
+    {
+      "id": "page1",
+      "title": "About You",
+      "fields": [
+        {
+          "id": "ageRange",
+          "type": "radio",
+          "label": "What is your age range?",
+          "required": true,
+          "options": [
+            { "value": "18-24", "label": "18-24" },
+            { "value": "25-34", "label": "25-34" },
+            { "value": "35-44", "label": "35-44" },
+            { "value": "45-54", "label": "45-54" },
+            { "value": "55+", "label": "55+" }
+          ]
+        },
+        {
+          "id": "location",
+          "type": "text",
+          "label": "Where are you located?",
+          "placeholder": "City, Country",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "page2",
+      "title": "Your Experience",
+      "fields": [
+        {
+          "id": "satisfaction",
+          "type": "radio",
+          "label": "How satisfied are you with our service?",
+          "required": true,
+          "options": [
+            { "value": "very-satisfied", "label": "Very Satisfied" },
+            { "value": "satisfied", "label": "Satisfied" },
+            { "value": "neutral", "label": "Neutral" },
+            { "value": "dissatisfied", "label": "Dissatisfied" },
+            { "value": "very-dissatisfied", "label": "Very Dissatisfied" }
+          ]
+        },
+        {
+          "id": "recommend",
+          "type": "radio",
+          "label": "Would you recommend us to others?",
+          "required": true,
+          "options": [
+            { "value": "definitely", "label": "Definitely" },
+            { "value": "probably", "label": "Probably" },
+            { "value": "maybe", "label": "Maybe" },
+            { "value": "probably-not", "label": "Probably Not" },
+            { "value": "definitely-not", "label": "Definitely Not" }
+          ]
+        },
+        {
+          "id": "improvements",
+          "type": "checkboxes",
+          "label": "What could we improve? (Select all that apply)",
+          "required": false,
+          "options": [
+            { "value": "speed", "label": "Speed of service" },
+            { "value": "quality", "label": "Quality of product" },
+            { "value": "support", "label": "Customer support" },
+            { "value": "pricing", "label": "Pricing" },
+            { "value": "features", "label": "Features" }
+          ]
+        },
+        {
+          "id": "comments",
+          "type": "textarea",
+          "label": "Additional comments",
+          "placeholder": "Share any other thoughts...",
+          "required": false,
+          "validation": {
+            "maxLength": 500
+          }
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+

@@ -1,0 +1,116 @@
+{
+  "formId": "registration-001",
+  "version": "1.0",
+  "title": "Event Registration",
+  "description": "Register for our upcoming event",
+  "settings": {
+    "multiPage": true,
+    "progressBar": true,
+    "submitButtonText": "Complete Registration",
+    "successMessage": "Registration successful! We'll send you a confirmation email shortly.",
+    "theme": "default"
+  },
+  "pages": [
+    {
+      "id": "page1",
+      "title": "Personal Information",
+      "fields": [
+        {
+          "id": "firstName",
+          "type": "text",
+          "label": "First Name",
+          "required": true,
+          "validation": {
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z\\s]+$"
+          },
+          "layout": {
+            "width": "half"
+          }
+        },
+        {
+          "id": "lastName",
+          "type": "text",
+          "label": "Last Name",
+          "required": true,
+          "validation": {
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z\\s]+$"
+          },
+          "layout": {
+            "width": "half"
+          }
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "label": "Email Address",
+          "required": true,
+          "validation": {
+            "message": "Please enter a valid email address"
+          }
+        },
+        {
+          "id": "phone",
+          "type": "tel",
+          "label": "Phone Number",
+          "required": true,
+          "validation": {
+            "pattern": "^[\\d\\s\\-\\(\\)]+$"
+          }
+        }
+      ]
+    },
+    {
+      "id": "page2",
+      "title": "Event Details",
+      "fields": [
+        {
+          "id": "dietary",
+          "type": "select",
+          "label": "Dietary Requirements",
+          "required": false,
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "vegetarian", "label": "Vegetarian" },
+            { "value": "vegan", "label": "Vegan" },
+            { "value": "gluten-free", "label": "Gluten-Free" },
+            { "value": "other", "label": "Other" }
+          ]
+        },
+        {
+          "id": "accessibility",
+          "type": "checkboxes",
+          "label": "Accessibility Requirements",
+          "required": false,
+          "options": [
+            { "value": "wheelchair", "label": "Wheelchair access" },
+            { "value": "hearing", "label": "Hearing assistance" },
+            { "value": "visual", "label": "Visual assistance" },
+            { "value": "other", "label": "Other" }
+          ]
+        },
+        {
+          "id": "emergencyContact",
+          "type": "text",
+          "label": "Emergency Contact Name",
+          "required": false
+        },
+        {
+          "id": "emergencyPhone",
+          "type": "tel",
+          "label": "Emergency Contact Phone",
+          "required": false
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+

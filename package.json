@@ -1,0 +1,48 @@
+{
+  "name": "form-builder-os",
+  "version": "1.0.0",
+  "description": "Open source form builder with runtime and connectors",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "build": "node esbuild.config.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "format": "prettier --write \"**/*.{js,ts,json,css,html,md}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,json,css,html,md}\"",
+    "audit:a11y": "node scripts/a11y-audit.js"
+  },
+  "devDependencies": {
+    "@axe-core/cli": "^4.8.2",
+    "@types/jest": "^29.5.12",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "esbuild": "^0.19.12",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "form",
+    "form-builder",
+    "form-runtime",
+    "accessibility",
+    "wcag"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/form-builder-os.git"
+  }
+}
+
+
+
+
+
+

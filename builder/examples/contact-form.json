@@ -1,0 +1,93 @@
+{
+  "formId": "contact-form-001",
+  "version": "1.0",
+  "title": "Contact Us",
+  "description": "Get in touch with us",
+  "settings": {
+    "multiPage": false,
+    "progressBar": false,
+    "submitButtonText": "Send Message",
+    "successMessage": "Thank you for contacting us! We'll get back to you soon.",
+    "theme": "default"
+  },
+  "pages": [
+    {
+      "id": "page1",
+      "title": "Contact Information",
+      "fields": [
+        {
+          "id": "name",
+          "type": "text",
+          "label": "Full Name",
+          "placeholder": "Enter your full name",
+          "required": true,
+          "validation": {
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "layout": {
+            "width": "full"
+          }
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "label": "Email Address",
+          "placeholder": "your.email@example.com",
+          "required": true,
+          "validation": {
+            "message": "Please enter a valid email address"
+          },
+          "layout": {
+            "width": "half"
+          }
+        },
+        {
+          "id": "phone",
+          "type": "tel",
+          "label": "Phone Number",
+          "placeholder": "(555) 123-4567",
+          "required": false,
+          "layout": {
+            "width": "half"
+          }
+        },
+        {
+          "id": "subject",
+          "type": "select",
+          "label": "Subject",
+          "required": true,
+          "options": [
+            { "value": "general", "label": "General Inquiry" },
+            { "value": "support", "label": "Support Request" },
+            { "value": "sales", "label": "Sales Question" },
+            { "value": "other", "label": "Other" }
+          ],
+          "layout": {
+            "width": "full"
+          }
+        },
+        {
+          "id": "message",
+          "type": "textarea",
+          "label": "Message",
+          "placeholder": "Tell us how we can help...",
+          "required": true,
+          "validation": {
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "layout": {
+            "width": "full"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+

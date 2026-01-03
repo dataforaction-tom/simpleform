@@ -1,0 +1,38 @@
+/**
+ * Dark Theme
+ * Dark mode color scheme
+ */
+
+.theme-dark {
+  --form-color-primary: #4a9eff;
+  --form-color-primary-hover: #6bb0ff;
+  --form-color-primary-focus: #4a9eff;
+  --form-color-text: #e0e0e0;
+  --form-color-text-secondary: #b0b0b0;
+  --form-color-border: #555555;
+  --form-color-border-focus: #4a9eff;
+  --form-color-error: #ff6b6b;
+  --form-color-success: #51cf66;
+  --form-color-background: #1a1a1a;
+  --form-color-background-disabled: #2a2a2a;
+}
+
+.theme-dark .form-success {
+  background-color: #1e3a1e;
+  border-color: var(--form-color-success);
+  color: var(--form-color-success);
+}
+
+.theme-dark .form-repeatable-instance {
+  background-color: #2a2a2a;
+}
+
+.theme-dark .form-calculated-field {
+  background-color: #2a2a2a;
+}
+
+
+
+
+
+
