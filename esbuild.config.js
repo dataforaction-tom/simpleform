@@ -122,10 +122,13 @@ async function copySchema() {
   }
 }
 
-// Copy form.html
+// Copy form.html and index.html
 async function copyFormPage() {
   if (existsSync('form.html')) {
     copyFileSync('form.html', join(distDir, 'form.html'));
+  }
+  if (existsSync('index.html')) {
+    copyFileSync('index.html', join(distDir, 'index.html'));
   }
 }
 
