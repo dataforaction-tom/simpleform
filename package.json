@@ -38,11 +38,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/form-builder-os.git"
+  },
+  "dependencies": {
+    "redis": "^5.10.0"
   }
 }
-
-
-
-
-
 

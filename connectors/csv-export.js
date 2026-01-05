@@ -7,9 +7,63 @@ class CSVExportConnector extends FormConnector {
   constructor(config = {}) {
     super(config);
     this.filename = config.filename || 'form-responses.csv';
-    this.fieldMapping = config.fieldMapping || null; // Optional field name mapping
+    this.fieldMapping = config.fieldMapping || null; // Optional field name mapping (overrides labels)
+    this.schema = config.schema || null; // Form schema to get field labels
     this.dateFormat = config.dateFormat || 'ISO'; // ISO, US, EU
     this.handleRepeatable = config.handleRepeatable || 'flatten'; // flatten or separate
+    this.labelMap = this.buildLabelMap(); // Map of field IDs to labels
+  }
+
+  /**
+   * Build a map of field IDs to labels from the schema
+   */
+  buildLabelMap() {
+    const map = {};
+    if (!this.schema) return map;
+
+    // Extract all fields from pages
+    if (this.schema.pages) {
+      this.schema.pages.forEach(page => {
+        if (page.fields) {
+          page.fields.forEach(field => {
+            if (field.id && field.label) {
+              map[field.id] = field.label;
+            }
+          });
+        }
+      });
+    }
+
+    // Extract fields from repeatable sections
+    if (this.schema.repeatableSections) {
+      this.schema.repeatableSections.forEach(section => {
+        if (section.fields) {
+          section.fields.forEach(field => {
+            if (field.id && field.label) {
+              map[field.id] = field.label;
+            }
+          });
+        }
+      });
+    }
+
+    return map;
+  }
+
+  /**
+   * Get the label for a field, with fallback to field name
+   */
+  getFieldLabel(fieldId) {
+    // First check custom mapping (highest priority)
+    if (this.fieldMapping?.[fieldId]) {
+      return this.fieldMapping[fieldId];
+    }
+    // Then check schema label
+    if (this.labelMap[fieldId]) {
+      return this.labelMap[fieldId];
+    }
+    // Fallback to field ID
+    return fieldId;
   }
 
   async submit(formData) {
@@ -55,9 +109,20 @@ class CSVExportConnector extends FormConnector {
       }
     });
 
-    // Build headers
+    // Build headers using labels
     Array.from(allFields).forEach((field) => {
-      const header = this.fieldMapping?.[field] || field;
+      // Handle nested field paths like "section[0].fieldId"
+      let header = field;
+      const match = field.match(/^(.+?)(\[.*\])?\.(.+)$/);
+      if (match) {
+        const [, section, index, fieldId] = match;
+        const sectionLabel = this.getFieldLabel(section) || section;
+        const fieldLabel = this.getFieldLabel(fieldId) || fieldId;
+        header = index ? `${sectionLabel}${index}.${fieldLabel}` : `${sectionLabel}.${fieldLabel}`;
+      } else {
+        // Simple field ID
+        header = this.getFieldLabel(field);
+      }
       headers.push(this.escapeCSV(header));
     });
     rows.push(headers.join(','));
@@ -187,6 +252,7 @@ if (typeof module !== 'undefined' && module.exports) {
 } else if (typeof window !== 'undefined') {
   window.CSVExportConnector = CSVExportConnector;
 }
+
 
 
 

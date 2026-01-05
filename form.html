@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form</title>
-  <link rel="stylesheet" href="runtime/form-runtime.css">
+  <link rel="stylesheet" href="/runtime/form-runtime.css">
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -61,7 +61,7 @@
     </div>
   </div>
 
-  <script src="runtime/form-runtime.js"></script>
+  <script src="/runtime/form-runtime.js"></script>
   <script>
     // Get form ID from URL
     function getFormId() {
@@ -117,6 +117,29 @@
           document.title = formSchema.title;
         }
 
+        // Helper function to ensure base connector is loaded
+        let baseConnectorLoaded = false;
+        async function ensureBaseConnector() {
+          if (baseConnectorLoaded || typeof window.FormConnector !== 'undefined') {
+            baseConnectorLoaded = true;
+            return;
+          }
+          
+          try {
+            const baseConnectorCode = await fetch('/connectors/base-connector.js').then(r => r.text()).catch(() => '');
+            if (baseConnectorCode) {
+              const baseScript = document.createElement('script');
+              baseScript.textContent = baseConnectorCode;
+              document.head.appendChild(baseScript);
+              // Wait for script to execute
+              await new Promise(resolve => setTimeout(resolve, 10));
+              baseConnectorLoaded = true;
+            }
+          } catch (error) {
+            console.error('Failed to load base connector:', error);
+          }
+        }
+
         // Create form runtime
         const form = new FormRuntime({
           schema: formSchema,
@@ -131,13 +154,23 @@
               if (connectorType === 'csv') {
                 // CSV export - client-side
                 try {
-                  const csvConnectorCode = await fetch('connectors/csv-export.js').then(r => r.text()).catch(() => '');
+                  // Ensure base connector is loaded first
+                  await ensureBaseConnector();
+                  
+                  const csvConnectorCode = await fetch('/connectors/csv-export.js').then(r => r.text()).catch(() => '');
                   if (csvConnectorCode) {
-                    // Create a script element to load the connector
-                    const script = document.createElement('script');
-                    script.textContent = csvConnectorCode;
-                    document.head.appendChild(script);
-                    const connector = new CSVExportConnector(connectorConfig);
+                    const csvScript = document.createElement('script');
+                    csvScript.textContent = csvConnectorCode;
+                    document.head.appendChild(csvScript);
+                    
+                    // Wait for script to execute
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    
+                    // Pass schema to connector so it can use field labels
+                    const connector = new CSVExportConnector({
+                      ...connectorConfig,
+                      schema: formSchema
+                    });
                     return await connector.submit(formData);
                   }
                 } catch (error) {
@@ -146,11 +179,18 @@
               } else if (connectorType === 'webhook') {
                 // Webhook - direct call
                 try {
-                  const webhookCode = await fetch('connectors/webhook.js').then(r => r.text()).catch(() => '');
+                  // Ensure base connector is loaded first
+                  await ensureBaseConnector();
+                  
+                  const webhookCode = await fetch('/connectors/webhook.js').then(r => r.text()).catch(() => '');
                   if (webhookCode) {
-                    const script = document.createElement('script');
-                    script.textContent = webhookCode;
-                    document.head.appendChild(script);
+                    const webhookScript = document.createElement('script');
+                    webhookScript.textContent = webhookCode;
+                    document.head.appendChild(webhookScript);
+                    
+                    // Wait for script to execute
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    
                     const connector = new WebhookConnector(connectorConfig);
                     return await connector.submit(formData);
                   }

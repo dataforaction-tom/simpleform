@@ -65,7 +65,49 @@ If you want to use Airtable, Google Sheets, Notion, or Email connectors:
    - Enter connector config (Base ID, Table Name, etc.)
    - Save
 
-## Step 5: Share Your Form
+## Step 5: Configure Form Storage (Recommended for Production)
+
+By default, forms are stored in-memory, which means:
+- ✅ Forms work immediately (no setup required)
+- ⚠️ Forms are lost when the function restarts or redeploys
+- ⚠️ Not suitable for production use
+
+**For persistent storage, set up Redis via Vercel Marketplace:**
+
+> **Note:** Vercel KV has been sunset. Use Marketplace Storage (Redis) instead, which provides automatic account provisioning and unified billing.
+
+1. **Link your project (if not already linked):**
+   ```bash
+   vercel link
+   ```
+
+2. **Add Redis to your project via Marketplace:**
+   - Go to [vercel.com/dashboard](https://vercel.com/dashboard)
+   - Select your project
+   - Go to the [Vercel Marketplace](https://vercel.com/integrations)
+   - Search for "Redis" (e.g., Upstash Redis, Redis Cloud)
+   - Click "Add Integration" and follow the setup wizard
+   - The integration automatically provisions the Redis instance
+
+3. **Pull environment variables:**
+   ```bash
+   vercel env pull .env.local
+   ```
+   This creates/updates your `.env.local` file with `REDIS_URL`
+
+4. **Install the Redis package:**
+   ```bash
+   npm install redis
+   ```
+
+5. **Redeploy:**
+   ```bash
+   vercel --prod
+   ```
+
+Forms will now persist across deployments! 🎉
+
+## Step 6: Share Your Form
 
 **Option 1: Shareable URL (Recommended)**
 1. Click "Share Form" button
@@ -93,6 +135,12 @@ If you want to use Airtable, Google Sheets, Notion, or Email connectors:
 - Verify API key is correct in Vercel environment variables
 - Check browser console for error messages
 - Test API endpoint directly: `curl -X POST https://your-app.vercel.app/api/connectors/airtable -H "Content-Type: application/json" -d '{"formData":{},"baseId":"test","tableName":"test"}'`
+
+### "Error saving form: ENOENT" or forms not persisting
+
+- This is expected with the default in-memory storage
+- Forms are lost on redeployment or function restart
+- **Solution:** Set up Redis via Vercel Marketplace for persistent storage (see Step 5)
 
 ### Build fails
 

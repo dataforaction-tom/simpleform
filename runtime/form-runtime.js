@@ -68,7 +68,7 @@ class FormRuntime {
     if (!document.querySelector('link[href*="form-runtime.css"]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = './runtime/form-runtime.css';
+      link.href = '/runtime/form-runtime.css';
       document.head.appendChild(link);
     }
 

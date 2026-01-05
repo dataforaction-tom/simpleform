@@ -504,27 +504,42 @@ if __name__ == '__main__':
 
 ## Form Storage
 
-Forms saved via "Save & Get URL" are stored in `data/forms.json` by default. For production use, consider:
+Forms saved via "Save & Get URL" need persistent storage. The default implementation uses an in-memory store that works immediately but doesn't persist across deployments.
 
-### Option 1: JSON File (Default)
-- Forms stored in `data/forms.json`
-- Simple and works out of the box
-- File is in `.gitignore` (not committed to git)
-- **Note**: File may be lost on redeployment if not persisted
+### Option 1: In-Memory Store (Default - Development Only)
+- Forms stored in memory
+- ✅ Works immediately, no setup required
+- ⚠️ **Forms are lost on function restart or redeployment**
+- ⚠️ **Not suitable for production**
+- Use only for testing/development
 
-### Option 2: Vercel KV (Recommended for Production)
-- Use Vercel KV (Redis) for persistent storage
-- Forms survive deployments
-- Better for production use
-- Setup:
-  1. Add Vercel KV in Vercel dashboard
-  2. Install: `npm install @vercel/kv`
-  3. Update API endpoints to use KV instead of file system
+### Option 2: Redis via Vercel Marketplace (Recommended for Production)
+> **Note:** Vercel KV has been sunset. Use Marketplace Storage (Redis) instead, which provides automatic account provisioning and unified billing.
+
+- Use Redis from Vercel Marketplace (e.g., Upstash Redis, Redis Cloud) for persistent storage
+- ✅ Forms survive deployments and function restarts
+- ✅ Fast and reliable
+- ✅ Automatic account provisioning and unified billing
+- ✅ Free tier available on most providers
+- **Setup:**
+  1. Link your project (if not already): `vercel link`
+  2. Go to [vercel.com/dashboard](https://vercel.com/dashboard)
+  3. Select your project
+  4. Go to the [Vercel Marketplace](https://vercel.com/integrations)
+  5. Search for "Redis" (e.g., Upstash Redis, Redis Cloud)
+  6. Click "Add Integration" and follow the setup wizard
+  7. Pull environment variables: `vercel env pull .env.local`
+  8. Install package: `npm install redis`
+  9. Environment variable `REDIS_URL` is automatically added by the integration
+  10. Redeploy: `vercel --prod`
+  
+  The API endpoints automatically detect and use Redis when `REDIS_URL` is configured!
 
 ### Option 3: External Database
 - Use your own database (PostgreSQL, MongoDB, etc.)
 - Most flexible option
 - Requires custom API implementation
+- Modify `api/forms.js` and `api/forms/[id].js` to use your database
 
 ## Environment Variables
 

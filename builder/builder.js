@@ -1743,6 +1743,104 @@ class FormBuilder {
     }
   }
 
+  /**
+   * Get all form field IDs and labels for mapping
+   */
+  getFormFields() {
+    const fields = [];
+    if (this.currentSchema.pages) {
+      this.currentSchema.pages.forEach(page => {
+        if (page.fields) {
+          page.fields.forEach(field => {
+            if (field.id && field.type !== 'header' && field.type !== 'paragraph') {
+              fields.push({
+                id: field.id,
+                label: field.label || field.id,
+                type: field.type
+              });
+            }
+          });
+        }
+      });
+    }
+    if (this.currentSchema.repeatableSections) {
+      this.currentSchema.repeatableSections.forEach(section => {
+        if (section.fields) {
+          section.fields.forEach(field => {
+            if (field.id && field.type !== 'header' && field.type !== 'paragraph') {
+              fields.push({
+                id: field.id,
+                label: field.label || field.id,
+                type: field.type
+              });
+            }
+          });
+        }
+      });
+    }
+    return fields;
+  }
+
+  /**
+   * Generate field mapping UI
+   */
+  generateFieldMappingUI(connectorType, savedMapping = {}) {
+    const fields = this.getFormFields();
+    if (fields.length === 0) {
+      return '<p style="color:#999;font-size:0.875rem;">Add fields to your form to enable field mapping.</p>';
+    }
+
+    const mappingKey = connectorType === 'notion' ? 'propertyMapping' : 'fieldMapping';
+    const targetLabel = connectorType === 'notion' ? 'Notion Property' : connectorType === 'airtable' ? 'Airtable Field' : 'Sheet Column';
+
+    let html = `
+      <div class="config-group" style="margin-top:1.5rem;">
+        <label style="font-weight:600;margin-bottom:0.5rem;display:block;">Field Mapping</label>
+        <p style="font-size:0.875rem;color:#666;margin-bottom:0.75rem;">
+          Map your form fields to ${connectorType === 'notion' ? 'Notion properties' : connectorType === 'airtable' ? 'Airtable fields' : 'Google Sheets columns'}.
+          Leave blank to use the field ID as the ${connectorType === 'notion' ? 'property' : 'field'} name.
+        </p>
+        <div style="max-height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:4px;padding:0.5rem;">
+    `;
+
+    fields.forEach(field => {
+      const currentMapping = savedMapping[field.id] || '';
+      html += `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;padding:0.5rem;border-bottom:1px solid #f0f0f0;">
+          <div>
+            <div style="font-weight:500;font-size:0.875rem;">${this.escapeHtml(field.label)}</div>
+            <div style="font-size:0.75rem;color:#999;">ID: ${field.id}</div>
+          </div>
+          <div>
+            <input 
+              type="text" 
+              class="field-mapping-input" 
+              data-field-id="${field.id}"
+              value="${this.escapeHtml(currentMapping)}"
+              placeholder="${field.id}"
+              style="width:100%;padding:0.375rem;font-size:0.875rem;border:1px solid #ddd;border-radius:3px;">
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+        <p style="font-size:0.75rem;color:#666;margin-top:0.5rem;">
+          💡 Tip: Enter the exact ${connectorType === 'notion' ? 'property' : 'field'} name as it appears in your ${connectorType === 'notion' ? 'Notion database' : connectorType === 'airtable' ? 'Airtable table' : 'Google Sheet'}.
+        </p>
+      </div>
+    `;
+
+    return html;
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   showConnectorConfig(type, savedConfig = {}) {
     const configPanel = document.getElementById('connector-config-panel');
     if (!configPanel) return;
@@ -1815,6 +1913,7 @@ class FormBuilder {
               Create sheet if it doesn't exist
             </label>
           </div>
+          ${this.generateFieldMappingUI('google-sheets', savedConfig.fieldMapping || {})}
           <p style="color:#666;font-size:0.875rem;margin-top:1rem;">Note: Set GOOGLE_SHEETS_ACCESS_TOKEN in Vercel environment variables.</p>
         `;
         break;
@@ -1835,6 +1934,7 @@ class FormBuilder {
             <label>Table Name</label>
             <input type="text" id="connector-airtable-table" value="${savedConfig.tableName || ''}" placeholder="Table 1">
           </div>
+          ${this.generateFieldMappingUI('airtable', savedConfig.fieldMapping || {})}
           <p style="color:#666;font-size:0.875rem;margin-top:1rem;">Note: Set AIRTABLE_API_KEY in Vercel environment variables.</p>
         `;
         break;
@@ -1851,6 +1951,7 @@ class FormBuilder {
             <label>Database ID</label>
             <input type="text" id="connector-notion-db" value="${savedConfig.databaseId || ''}" placeholder="Enter Notion database ID">
           </div>
+          ${this.generateFieldMappingUI('notion', savedConfig.propertyMapping || {})}
           <p style="color:#666;font-size:0.875rem;margin-top:1rem;">Note: Set NOTION_API_KEY in Vercel environment variables.</p>
         `;
         break;
@@ -1927,17 +2028,23 @@ class FormBuilder {
         this.currentSchema.connector.config.spreadsheetId = document.getElementById('connector-sheets-id').value;
         this.currentSchema.connector.config.sheetName = document.getElementById('connector-sheets-name').value;
         this.currentSchema.connector.config.createSheet = document.getElementById('connector-sheets-create').checked;
+        // Save field mapping
+        this.currentSchema.connector.config.fieldMapping = this.collectFieldMapping();
         break;
 
       case 'airtable':
         this.currentSchema.connector.config.apiEndpoint = document.getElementById('connector-airtable-api-endpoint').value;
         this.currentSchema.connector.config.baseId = document.getElementById('connector-airtable-base').value;
         this.currentSchema.connector.config.tableName = document.getElementById('connector-airtable-table').value;
+        // Save field mapping
+        this.currentSchema.connector.config.fieldMapping = this.collectFieldMapping();
         break;
 
       case 'notion':
         this.currentSchema.connector.config.apiEndpoint = document.getElementById('connector-notion-api-endpoint').value;
         this.currentSchema.connector.config.databaseId = document.getElementById('connector-notion-db').value;
+        // Save property mapping
+        this.currentSchema.connector.config.propertyMapping = this.collectFieldMapping();
         break;
 
       case 'email':
@@ -1950,7 +2057,25 @@ class FormBuilder {
     }
 
     this.updateJSONEditor();
+    // Update preview
+    this.updatePreview();
     alert('Connector configuration saved!');
+  }
+
+  /**
+   * Collect field mapping from the UI inputs
+   */
+  collectFieldMapping() {
+    const mapping = {};
+    const inputs = document.querySelectorAll('.field-mapping-input');
+    inputs.forEach(input => {
+      const fieldId = input.dataset.fieldId;
+      const mappedValue = input.value.trim();
+      if (mappedValue) {
+        mapping[fieldId] = mappedValue;
+      }
+    });
+    return Object.keys(mapping).length > 0 ? mapping : null;
   }
 
   showShareModal() {
